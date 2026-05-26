@@ -1,0 +1,3 @@
+[workspace]
+members = ["./lenocon-core", "./lenocon-cli", "./lenocon-daemon"]
+resolver = "3"
