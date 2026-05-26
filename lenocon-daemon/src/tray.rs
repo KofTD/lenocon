@@ -65,7 +65,7 @@ impl ksni::Tray for LenoconTray {
                         Ok(out) => error!(
                             "pkexec lenocon failed ({}): {}",
                             out.status,
-                            String::from_utf8_lossy(&out.stderr)
+                            String::from_utf8_lossy(&out.stderr).trim_end_matches('\n')
                         ),
                         Err(e) => error!("Failed to spawn pkexec: {e}"),
                     }
