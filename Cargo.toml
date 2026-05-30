@@ -1,3 +1,10 @@
 [workspace]
 members = ["./lenocon-core", "./lenocon-cli", "./lenocon-daemon"]
 resolver = "3"
+
+[profile.release]
+lto = "thin"
+
+[profile.no-lto]
+inherits = "release"
+lto = false
