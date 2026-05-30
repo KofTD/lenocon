@@ -9,11 +9,3 @@ ksni = "0.3.4"
 tokio = "1.52.3"
 log = "0.4.30"
 simplelog = "0.12.2"
-
-[lib]
-name = "lenocon_daemon"
-path = "src/lib.rs"
-
-# [[bin]]
-# name = "lenocon-daemon"
-# path = "src/main.rs"
