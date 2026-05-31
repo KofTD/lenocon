@@ -12,9 +12,13 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// set conservation mode off
     Disable,
+    /// set conservation mode on
     Enable,
+    /// check conservation mode status
     Status,
+    /// toggle conservation mode
     Toggle,
 }
 
