@@ -27,13 +27,15 @@ struct StandardItemBuilder<T> {
     activate: Box<dyn Fn(&mut T) + Send>,
 }
 
-impl<T> StandardItemBuilder<T> {
+fn noop<T>(_: &mut T) {}
+
+impl<T: 'static> StandardItemBuilder<T> {
     fn new() -> Self {
-        StandardItemBuilder::<T> {
+        Self {
             label: String::new(),
             enabled: false,
             icon_name: String::new(),
-            activate: Box::new(|_this| {}),
+            activate: Box::new(noop::<T>),
         }
     }
 
@@ -52,8 +54,8 @@ impl<T> StandardItemBuilder<T> {
         self
     }
 
-    fn activate(mut self, activate: Box<dyn Fn(&mut T) + Send>) -> Self {
-        self.activate = activate;
+    fn activate(mut self, activate: impl Fn(&mut T) + Send + 'static) -> Self {
+        self.activate = Box::new(activate);
         self
     }
 
@@ -118,12 +120,12 @@ impl ksni::Tray for LenoconTray {
             MenuItem::Separator,
             StandardItemBuilder::new()
                 .label("Toggle")
-                .activate(Box::new(toggle_status))
+                .activate(toggle_status)
                 .build()
                 .into(),
             StandardItemBuilder::new()
                 .label("Quit")
-                .activate(Box::new(|_| std::process::exit(0)))
+                .activate(|_| std::process::exit(0))
                 .build()
                 .into(),
         ]
