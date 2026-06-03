@@ -1,19 +1,43 @@
+use crate::config::Config;
+
 use ksni::menu::{MenuItem, StandardItem};
 use log::error;
 
 pub struct LenoconTray {
+    config: Config,
     enabled: bool,
 }
 
 impl LenoconTray {
-    pub fn new(status: bool) -> Self {
-        LenoconTray { enabled: status }
+    pub fn from(config: Config) -> Self {
+        Self {
+            config,
+            enabled: lenocon_core::read_status()
+                .inspect_err(|err| {
+                    error!(
+                        "Can't read {}: {}",
+                        lenocon_core::CONSERVATION_FILE_PATH,
+                        err
+                    )
+                })
+                .unwrap_or(false),
+        }
     }
-    pub fn is_enabled(&self) -> bool {
+    pub fn config(&self) -> &Config {
+        &self.config
+    }
+    pub fn enabled(&self) -> bool {
         self.enabled
     }
-    pub fn set_enabled(&mut self, status: bool) {
-        self.enabled = status;
+    pub fn update_status(&mut self) {
+        match lenocon_core::read_status() {
+            Ok(new) => self.enabled = new,
+            Err(err) => error!(
+                "Can't read {}: {}",
+                lenocon_core::CONSERVATION_FILE_PATH,
+                err
+            ),
+        }
     }
     fn status_str(&self) -> &'static str {
         if self.enabled { "ON" } else { "OFF" }
@@ -76,13 +100,7 @@ fn toggle_status(tray: &mut LenoconTray) {
         .output();
 
     match result {
-        Ok(out) if out.status.success() => match lenocon_core::read_status() {
-            Ok(new) => tray.enabled = new,
-            Err(e) => error!(
-                "lenocon: file {}: {e}",
-                lenocon_core::CONSERVATION_FILE_PATH
-            ),
-        },
+        Ok(out) if out.status.success() => tray.update_status(),
         Ok(out) => error!(
             "pkexec lenocon failed ({}): {}",
             out.status,
@@ -99,10 +117,9 @@ impl ksni::Tray for LenoconTray {
 
     fn icon_name(&self) -> String {
         match self.enabled {
-            true => "battery-good-charging-symbolic",
-            false => "battery-caution-symbolic",
+            true => self.config().on_icon.clone(),
+            false => self.config().off_icon.clone(),
         }
-        .into()
     }
 
     fn title(&self) -> String {

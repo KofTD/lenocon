@@ -9,3 +9,8 @@ ksni = "0.3.4"
 tokio = "1.52.3"
 log = "0.4.30"
 simplelog = "0.12.2"
+toml = { version = "1.1.2", features = ["serde"] }
+serde = { version = "1.0.228", features = ["derive"] }
+thiserror = "2.0.18"
+regex = "1.12.3"
+image = "0.25.10"
