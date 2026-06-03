@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
+#[serde(default)]
 pub struct Config {
     pub on_icon: String,
     pub off_icon: String,
