@@ -1,17 +1,31 @@
 use std::env::var;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
+use std::time::{Duration, SystemTime};
 
 use simplelog::{Config, LevelFilter, WriteLogger};
 
 pub fn configure_logger() -> Result<(), std::io::Error> {
-    let log_file = OpenOptions::new()
-        .append(true)
-        .create(true)
-        .open(log_file())?;
-    WriteLogger::init(LevelFilter::Info, Config::default(), log_file)
-        .expect("Failed to init logger");
-    Ok(())
+    const STALE_AFTER: Duration = Duration::from_hours(24 * 7);
+    let path = log_file();
+
+    let is_stale = path
+        .metadata()
+        .and_then(|m| m.created())
+        .ok()
+        .and_then(|created| SystemTime::now().duration_since(created).ok())
+        .is_some_and(|age| age > STALE_AFTER);
+
+    let mut options = OpenOptions::new();
+    options.create(true).write(true);
+    if is_stale {
+        options.truncate(true);
+    } else {
+        options.append(true);
+    }
+
+    let file = options.open(&path)?;
+    WriteLogger::init(LevelFilter::Info, Config::default(), file).map_err(std::io::Error::other)
 }
 
 fn log_file() -> PathBuf {
