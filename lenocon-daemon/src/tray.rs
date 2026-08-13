@@ -137,11 +137,13 @@ impl ksni::Tray for LenoconTray {
             MenuItem::Separator,
             StandardItemBuilder::new()
                 .label("Toggle")
+                .enabled(true)
                 .activate(toggle_status)
                 .build()
                 .into(),
             StandardItemBuilder::new()
                 .label("Quit")
+                .enabled(true)
                 .activate(|_| std::process::exit(0))
                 .build()
                 .into(),
